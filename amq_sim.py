@@ -17,7 +17,7 @@ config_options = dict(config.items('OPTIONS'))
 
 p1_type_stats = [0, 0, 0]
 p2_type_stats = [0, 0, 0]
-off_list_multiliers = [float(config_options['p1_off_list_multiplier']), float(config_options['p2_off_list_multiplier'])]
+off_list_multipliers = [float(config_options['p1_off_list_multiplier']), float(config_options['p2_off_list_multiplier'])]
 
 import json
 import random
@@ -34,7 +34,7 @@ def calc_off_list(song, player, on_list):
         song_diff = song_diff * 0.5
     type_diff = type_stats[song.type - 1]
     chance = type_diff * song_diff / 100
-    chance = chance * off_list_multiliers[player - 1]
+    chance = chance * off_list_multipliers[player - 1]
     # print(chance, song.name, song.anime, player)
     return chance
 
@@ -74,7 +74,7 @@ lives = config_options['lives'] == 'True'
 # read in p1 data
 # for each anime in p1 make a dict
  # each anime has a dict of songs and their difficulties
-with open('amq_stats3.json', 'rb') as file:
+with open('amq_stats-brett2.json', 'rb') as file:
     data = json.load(file)
 p1_anime_dict = {}
 load_anime_dict(data, p1_anime_dict, 1)
@@ -82,7 +82,7 @@ load_anime_dict(data, p1_anime_dict, 1)
 # read in p2 data
 # for each anime in p2 make a dict
  # each anime has a dict of songs and their difficulties
-with open('amq_stats-bryan.json', 'rb') as file:
+with open('amq_stats-jarod.json', 'rb') as file:
     data = json.load(file)
 p2_anime_dict = {}
 load_anime_dict(data, p2_anime_dict, 2)
@@ -91,11 +91,19 @@ games = int(config_options['games'])
 p1_wins = 0
 p2_wins = 0
 ties = 0
+def build_weighted_anime_list(anime_dict):
+    weighted = []
+    for anime, songs in anime_dict.items():
+        entries = 1 + (len(songs) // 4)
+        weighted.extend([anime] * entries)
+    return weighted
 for game in range(games):
     # sample 100 anime from each player
     # get 100 random keys from the dicts
-    p1_anime = random.sample(list(p1_anime_dict.keys()), 100)
-    p2_anime = random.sample(list(p2_anime_dict.keys()), 100)
+    p1_weighted = build_weighted_anime_list(p1_anime_dict)
+    p2_weighted = build_weighted_anime_list(p2_anime_dict)
+    p1_anime = random.sample(p1_weighted, 100)
+    p2_anime = random.sample(p2_weighted, 100)
     anime_list = p1_anime + p2_anime
     p1_score = 0
     p2_score = 0
